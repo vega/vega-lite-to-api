@@ -1,0 +1,59 @@
+{
+  "name": "vega-lite-to-apis",
+  "version": "0.0.1",
+  "description": "Convert Vega-Lite specifications to APIs in other languages",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "yarn test",
+    "test": "jest",
+    "posttest": "yarn  lint",
+    "lint": "tslint -c tslint.json src/**/*.ts"
+  },
+  "keywords": [
+    "Vega-Lite"
+  ],
+  "author": "Kanit (Ham) Wongsuphasawat",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "vega-lite": "^3.0.3",
+    "vega-util": "^1.10.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@types/jest": "^24.0.11",
+    "babel-jest": "^24.5.0",
+    "jest": "^24.5.0",
+    "ts-jest": "^24.0.0",
+    "tslint": "^5.14.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.4.1",
+    "vega": "^5.3.2",
+    "vega-lite-api": "^0.0.8"
+  },
+  "jest": {
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(vega-lite/))"
+    ],
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "build"
+    ]
+  }
+}
