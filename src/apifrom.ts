@@ -13,13 +13,13 @@ export function transpileProps<T extends object>(transpiler: APIFromWithAllKeys<
 }
 
 function transpileProp<T extends object, P extends keyof T>(transpiler: APIFromAllKeys<T>, x: T, prop: P) {
-  return transpiler[prop](x[prop]);
+  return transpiler[prop](x[prop], x);
 }
 
 /**
  * Type for a function that returns a statement from a given property P of Vega-Lite interface T
  */
-export type APIFromProp<T extends object, P extends keyof T> = (x: T[P]) => Statement;
+export type APIFromProp<T extends object, P extends keyof T> = (x: T[P], t: T) => Statement;
 
 /**
  * Base interface for a transpiler class of a particular Vega-Lite interface T
