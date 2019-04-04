@@ -37,21 +37,24 @@ export class FunctionChain implements IStatement {
   public toCode(indentLevel: number): string {
     const {main, chains} = this;
 
-    // Heuristic for whether to add new lines for method chaining
-    const newLineForRestChains = chains.length > 2;
-    const chainSeparator = newLineForRestChains ? NEWLINE : '';
+    const indentedMain = toCode(main, indentLevel);
+    const flatChains = chains.map(c => toCode(c, 0)).join('');
 
-    const firstChain = chains.length > 0 ? toCode(chains[0], 0) : '';
-    const restChains = chains
-      .slice(1)
-      .map(c => toCode(c, newLineForRestChains ? indentLevel + 1 : 0))
-      .join(chainSeparator);
+    if (indentedMain.length + flatChains.length <= 80) {
+      return indentedMain + flatChains;
+    } else {
+      const firstChain = chains.length > 0 ? toCode(chains[0], 0) : '';
+      const restChains = chains
+        .slice(1)
+        .map(c => toCode(c, indentLevel + 1))
+        .join(NEWLINE);
 
-    // prettier-ignore
-    return (
-      toCode(main, indentLevel) + firstChain + chainSeparator +
-        restChains
-    );
+      // prettier-ignore
+      return (
+        indentedMain + firstChain + NEWLINE +
+          restChains
+      );
+    }
   }
 }
 
