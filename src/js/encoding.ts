@@ -17,9 +17,9 @@ function position(channelDef: PositionDef, c: Channel): Statement {
 }
 
 /**
- * @returns method chain for a particiular channel (e.g., `.x()` or `.y(5)`)
+ * @returns A method chain for a particiular channel (e.g., `.x()` or `.y(5)`)
  */
-function channel(c: Channel, v?: number | string | boolean) {
+function channelChain(c: Channel, v?: number | string | boolean) {
   return `.${c}(${v !== undefined ? stringify(v) : ''})`;
 }
 
@@ -33,13 +33,13 @@ function fieldDef(def: FieldDef<Field>, c: Channel): Statement {
 
   // FIXME support condition, scale, axis, legend, format, etc.
 
-  return new FunctionChain('vl', [channel(c), `.field${t}(${stringify(field)})`]);
+  return new FunctionChain('vl', [channelChain(c), `.field${t}(${stringify(field)})`]);
 }
 
 function value(valueDef: ValueDef<number | string | boolean>, c: Channel) {
   // FIXME support condition
 
-  return new FunctionChain('vl', [channel(c, valueDef.value)]);
+  return new FunctionChain('vl', [channelChain(c, valueDef.value)]);
 }
 
 export class EncodingToJS implements APIFrom<FacetedCompositeEncoding> {
