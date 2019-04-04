@@ -23,17 +23,34 @@ function channelChain(c: Channel, v?: number | string | boolean) {
   return `.${c}(${v !== undefined ? stringify(v) : ''})`;
 }
 
-function fieldDef(def: FieldDef<Field>, c: Channel): Statement {
-  let t = '';
-  const {field} = def;
+function fieldDef(def: FieldDef<Field>, c: Channel): FunctionChain {
+  let type;
+  const {field, aggregate, timeUnit, bin} = def;
   if (isTypedFieldDef(def)) {
-    const {type} = def;
-    t = type.charAt(0).toUpperCase();
+    type = def.type;
   }
 
-  // FIXME support condition, scale, axis, legend, format, etc.
+  // FIXME support condition
 
-  return new FunctionChain('vl', [channelChain(c), `.field${t}(${stringify(field)})`]);
+  if (aggregate) {
+    if (isString(aggregate)) {
+      return new FunctionChain('vl', [
+        channelChain(c),
+        `.${aggregate}(${stringify(field)})`,
+        ...(type !== QUANTITATIVE ? [`.type(${type})`] : [])
+      ]);
+    } else {
+      throw new Error('argmin/argmax not implemented yet');
+    }
+    // TODO: add argmin def / argmax def
+  } else if (timeUnit) {
+    throw new Error('timeUnit not implemented yet');
+  } else if (bin) {
+    throw new Error('bin not implemented yet');
+  } else {
+    const t = type ? type.charAt(0).toUpperCase() : '';
+    return new FunctionChain('vl', [channelChain(c), `.field${t}(${stringify(field)})`]);
+  }
 }
 
 function value(valueDef: ValueDef<number | string | boolean>, c: Channel) {
