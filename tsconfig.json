@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
-    "outDir": "./build/",
     "target": "es6",
     "module": "es2015",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "outDir": "./build/",
+
     "declaration": true,
-    "forceConsistentCasingInFileNames": false,
+    "declarationMap": true,
     "sourceMap": true,
+
+    "allowSyntheticDefaultImports": true,
+    "importHelpers": true,
     "inlineSources": true,
     "isolatedModules": false,
     "noImplicitAny": true,
@@ -17,11 +20,8 @@
     "noUnusedLocals": true,
     "preserveConstEnums": true,
     "removeComments": false,
-    "strictFunctionTypes": false,
-    "strictNullChecks": false,
-    "suppressImplicitAnyIndexErrors": true,
-    "importHelpers": true,
     "resolveJsonModule": true,
+    "suppressImplicitAnyIndexErrors": true,
     "typeRoots": ["./node_modules/@types", "./typings"]
   },
   "include": ["src/**/*.ts"]
