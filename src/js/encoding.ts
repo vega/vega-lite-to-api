@@ -1,19 +1,21 @@
 import {Channel, POSITION_SCALE_CHANNELS} from 'vega-lite/build/src/channel';
 import {FacetedCompositeEncoding} from 'vega-lite/build/src/compositemark';
-import {Field, FieldDef, isFieldDef, isTypedFieldDef, isValueDef, ValueDef} from 'vega-lite/build/src/fielddef';
+import {Field, FieldDef, isFieldDef, isTypedFieldDef, ValueDef} from 'vega-lite/build/src/fielddef';
+import {QUANTITATIVE} from 'vega-lite/build/src/type';
+import {isString} from 'vega-util';
 import {APIFrom} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
 import {stringify} from './js-util';
 
+// TODO: declare this in Vega-Lite so everyone can use
 type PositionDef = FacetedCompositeEncoding['x'] | FacetedCompositeEncoding['y'];
 
 function position(channelDef: PositionDef, c: Channel): Statement {
   if (isFieldDef(channelDef)) {
     return fieldDef(channelDef, c);
-  } else if (isValueDef(channelDef)) {
+  } else {
     return value(channelDef, c);
   }
-  throw new Error(`Transpirer not implemented for ${stringify(channelDef)}`);
 }
 
 /**
