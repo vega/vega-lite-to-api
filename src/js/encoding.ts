@@ -1,18 +1,19 @@
 import {Channel, POSITION_SCALE_CHANNELS} from 'vega-lite/build/src/channel';
 import {FacetedCompositeEncoding} from 'vega-lite/build/src/compositemark';
-import {Field, FieldDef, isFieldDef, isTypedFieldDef, ValueDef} from 'vega-lite/build/src/fielddef';
-import {QUANTITATIVE} from 'vega-lite/build/src/type';
-import {isString} from 'vega-util';
+import {isFieldDef, ValueDef} from 'vega-lite/build/src/fielddef';
 import {APIFrom} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
+import {PositionFieldDefToJS} from './channeldef';
 import {stringify} from './js-util';
 
 // TODO: declare this in Vega-Lite so everyone can use
 type PositionDef = FacetedCompositeEncoding['x'] | FacetedCompositeEncoding['y'];
 
+const positionFieldDef = new PositionFieldDefToJS();
+
 function position(channelDef: PositionDef, c: Channel): Statement {
   if (isFieldDef(channelDef)) {
-    return fieldDef(channelDef, c);
+    return new FunctionChain('vl', [channelChain(c), ...positionFieldDef.transpile(channelDef)]);
   } else {
     return value(channelDef, c);
   }
@@ -23,36 +24,6 @@ function position(channelDef: PositionDef, c: Channel): Statement {
  */
 function channelChain(c: Channel, v?: number | string | boolean) {
   return `.${c}(${v !== undefined ? stringify(v) : ''})`;
-}
-
-function fieldDef(def: FieldDef<Field>, c: Channel): FunctionChain {
-  let type;
-  const {field, aggregate, timeUnit, bin} = def;
-  if (isTypedFieldDef(def)) {
-    type = def.type;
-  }
-
-  // FIXME support condition
-
-  if (aggregate) {
-    if (isString(aggregate)) {
-      return new FunctionChain('vl', [
-        channelChain(c),
-        `.${aggregate}(${stringify(field)})`,
-        ...(type !== QUANTITATIVE ? [`.type(${type})`] : [])
-      ]);
-    } else {
-      throw new Error('argmin/argmax not implemented yet');
-    }
-    // TODO: add argmin def / argmax def
-  } else if (timeUnit) {
-    throw new Error('timeUnit not implemented yet');
-  } else if (bin) {
-    throw new Error('bin not implemented yet');
-  } else {
-    const t = type ? type.charAt(0).toUpperCase() : '';
-    return new FunctionChain('vl', [channelChain(c), `.field${t}(${stringify(field)})`]);
-  }
 }
 
 function value(valueDef: ValueDef<number | string | boolean>, c: Channel) {
