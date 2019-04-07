@@ -7,12 +7,14 @@ describe('JS Encoding', () => {
   it('compiles basic encoding', () => {
     const encoding: FacetedCompositeEncoding = {
       x: {field: 'a', type: 'ordinal', title: 'ttt', sort: 'descending'},
-      y: {field: 'b', type: 'quantitative', scale: {zero: false}, axis: {labels: false}}
+      y: {field: 'b', type: 'quantitative', scale: {zero: false}, axis: {labels: false}},
+      color: {field: 'c', type: 'ordinal'}
     };
 
     expect(transpiler.transpile(encoding).map(e => toCode(e, 0))).toEqual([
-      `vl.x().fieldO("a").sort("descending").title("ttt")`,
-      `vl.y().fieldQ("b").scale({"zero":false}).axis({"labels":false})`
+      `vl.x().fieldO("a").title("ttt").sort("descending")`,
+      `vl.y().fieldQ("b").scale({"zero":false}).axis({"labels":false})`,
+      `vl.color().fieldO("c")`
     ]);
   });
 });

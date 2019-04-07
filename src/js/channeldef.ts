@@ -5,11 +5,13 @@ import {
   FieldDef,
   FieldDefBase,
   isTypedFieldDef,
+  MarkPropFieldDef,
   PositionFieldDef,
+  ScaleFieldDef,
   TypedFieldDef
 } from 'vega-lite/build/src/fielddef';
 import {TimeUnit} from 'vega-lite/build/src/timeunit';
-import {QUANTITATIVE} from 'vega-lite/build/src/type';
+import {QUANTITATIVE, StandardType} from 'vega-lite/build/src/type';
 import {isString} from 'vega-util';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
@@ -62,29 +64,38 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
   public type = chain<TypedFieldDef<Field>, 'type'>('type');
 }
 
-const POSITION_FIELD_DEF_PROP_ORDER: (keyof PositionFieldDef<Field>)[] = [
-  'sort',
-  'title',
-  'scale',
-  'axis',
-  'stack',
-  'impute'
-];
+const SCALE_FIELD_DEF_PROP_ORDER: (keyof ScaleFieldDef<Field>)[] = ['title', 'sort', 'scale'];
 
-export class PositionFieldDefToJS extends FieldDefBaseToJS implements APIFromWithAllKeys<PositionFieldDef<Field>> {
+export class ScaleFieldDefToJS extends FieldDefBaseToJS implements APIFromWithAllKeys<ScaleFieldDef<Field>> {
+  public transpile(def: ScaleFieldDef<Field>): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, SCALE_FIELD_DEF_PROP_ORDER)];
+  }
+
+  public title = chain('title');
+  public sort = chain('sort');
+
+  public scale = chain('scale');
+}
+
+const POSITION_FIELD_DEF_PROP_ORDER: (keyof PositionFieldDef<Field>)[] = ['axis', 'stack', 'impute'];
+
+export class PositionFieldDefToJS extends ScaleFieldDefToJS implements APIFromWithAllKeys<PositionFieldDef<Field>> {
   public transpile(def: PositionFieldDef<Field>): Statement[] {
     return [...super.transpile(def), ...transpileProps(this, def, POSITION_FIELD_DEF_PROP_ORDER)];
   }
-
-  public sort = chain('sort');
-
-  public title = chain('title');
-
-  public scale = chain('scale');
 
   public axis = chain('axis');
 
   public stack = chain('stack');
 
   public impute = chain('impute');
+}
+
+const MARK_PROP_FIELD_DEF_PROP_ORDER: (keyof MarkPropFieldDef<Field, StandardType>)[] = ['legend'];
+
+export class MarkPropFieldDefToJS extends ScaleFieldDefToJS implements APIFromWithAllKeys<MarkPropFieldDef<Field>> {
+  public transpile(def: MarkPropFieldDef<Field, StandardType>): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, MARK_PROP_FIELD_DEF_PROP_ORDER)];
+  }
+  public legend = chain('legend');
 }

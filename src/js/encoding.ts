@@ -1,9 +1,10 @@
-import {Channel, POSITION_SCALE_CHANNELS} from 'vega-lite/build/src/channel';
+import {Channel} from 'vega-lite/build/src/channel';
 import {FacetedCompositeEncoding} from 'vega-lite/build/src/compositemark';
-import {isFieldDef, ValueDef} from 'vega-lite/build/src/fielddef';
+import {Field, FieldDefWithCondition, isFieldDef, MarkPropFieldDef, ValueDef} from 'vega-lite/build/src/fielddef';
+import {StandardType} from 'vega-lite/build/src/type';
 import {APIFrom} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
-import {PositionFieldDefToJS} from './channeldef';
+import {MarkPropFieldDefToJS, PositionFieldDefToJS} from './channeldef';
 import {stringify} from './js-util';
 
 // TODO: declare this in Vega-Lite so everyone can use
@@ -14,6 +15,20 @@ const positionFieldDef = new PositionFieldDefToJS();
 function position(channelDef: PositionDef, c: Channel): Statement {
   if (isFieldDef(channelDef)) {
     return new FunctionChain('vl', [channelChain(c), ...positionFieldDef.transpile(channelDef)]);
+  } else {
+    return value(channelDef, c);
+  }
+}
+
+const markPropFieldDef = new MarkPropFieldDefToJS();
+
+function markProperty(
+  channelDef: FieldDefWithCondition<MarkPropFieldDef<Field, StandardType>, number | string | boolean | null>,
+  c: Channel
+): Statement {
+  if (isFieldDef(channelDef)) {
+    //
+    return new FunctionChain('vl', [channelChain(c), ...markPropFieldDef.transpile(channelDef)]);
   } else {
     return value(channelDef, c);
   }
@@ -36,7 +51,7 @@ export class EncodingToJS implements APIFrom<FacetedCompositeEncoding> {
   public transpile(encoding: FacetedCompositeEncoding): Statement[] {
     const out = [];
     // FIXME: add all channels
-    for (const c of POSITION_SCALE_CHANNELS) {
+    for (const c of ['x', 'y', 'color']) {
       const def = encoding[c];
       if (def) {
         out.push(this[c](def, c));
@@ -47,6 +62,8 @@ export class EncodingToJS implements APIFrom<FacetedCompositeEncoding> {
 
   public x = position;
   public y = position;
+
+  public color = markProperty;
 }
 
 export const encodingToJS = new EncodingToJS();
