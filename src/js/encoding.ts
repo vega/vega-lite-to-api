@@ -27,7 +27,7 @@ function markProperty(
   c: Channel
 ): Statement {
   if (isFieldDef(channelDef)) {
-    //
+    // FIXME support condition
     return new FunctionChain('vl', [channelChain(c), ...markPropFieldDef.transpile(channelDef)]);
   } else {
     return value(channelDef, c);
@@ -42,8 +42,6 @@ function channelChain(c: Channel, v?: number | string | boolean) {
 }
 
 function value(valueDef: ValueDef<number | string | boolean>, c: Channel) {
-  // FIXME support condition
-
   return new FunctionChain('vl', [channelChain(c, valueDef.value)]);
 }
 

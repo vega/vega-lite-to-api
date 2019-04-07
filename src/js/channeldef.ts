@@ -1,24 +1,24 @@
+import {Aggregate, isArgmaxDef, isArgminDef} from 'vega-lite/build/src/aggregate';
 import {BinParams} from 'vega-lite/build/src/bin';
 import {
-  Aggregate,
   Field,
   FieldDef,
   FieldDefBase,
+  HiddenCompositeAggregate,
   isTypedFieldDef,
   MarkPropFieldDef,
   PositionFieldDef,
   ScaleFieldDef,
   TypedFieldDef
-} from 'vega-lite/build/src/fielddef';
+} from 'vega-lite/build/src/channeldef';
 import {TimeUnit} from 'vega-lite/build/src/timeunit';
-import {QUANTITATIVE, StandardType} from 'vega-lite/build/src/type';
-import {isString} from 'vega-util';
+import {QUANTITATIVE, StandardType, Type} from 'vega-lite/build/src/type';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
 import {chain, stringify} from './js-util';
 
 export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>> {
-  public transpile(def: FieldDefBase<Field>): Statement[] {
+  public transpile(def: FieldDefBase<Field> | TypedFieldDef<Field>): Statement[] {
     const {field, aggregate, timeUnit, bin} = def;
 
     if (aggregate) {
@@ -40,17 +40,24 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
     return `.field${t}(${stringify(field)})`;
   }
 
-  public aggregate(aggregate: Aggregate, def: FieldDef<Field>): string[] {
+  public aggregate(aggregate: Aggregate | HiddenCompositeAggregate, def: FieldDef<Field>): Statement[] {
     const {field} = def;
-    if (isString(aggregate)) {
-      const aggregateChain = `.${aggregate}(${stringify(field)})`;
+    let type: Type;
+    if (isTypedFieldDef(def)) {
+      type = def.type;
+    }
 
-      if (isTypedFieldDef(def) && def.type !== QUANTITATIVE) {
-        return [aggregateChain, this.type(def.type, def)];
+    if (isArgmaxDef(aggregate)) {
+      return [...this.transpile({aggregate: 'argmax', field: aggregate.argmax}), ...this.transpile({field, type})];
+    } else if (isArgminDef(aggregate)) {
+      return [...this.transpile({aggregate: 'argmin', field: aggregate.argmin}), ...this.transpile({field, type})];
+    } else {
+      const aggregateChain = `.${aggregate}(${field ? stringify(field) : ''})`;
+
+      if (isTypedFieldDef(def) && type !== QUANTITATIVE) {
+        return [aggregateChain, this.type(type, def)];
       }
       return [aggregateChain];
-    } else {
-      throw new Error('argmin/argmax not implemented yet');
     }
   }
 
