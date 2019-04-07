@@ -4283,10 +4283,10 @@ vega-lite-api@^0.0.8:
   resolved "https://registry.yarnpkg.com/vega-lite-api/-/vega-lite-api-0.0.8.tgz#1d07410cfe22a8902ae0b9714214bea8fd853366"
   integrity sha512-UuuOJP4WxLRTlcMRtDsHy7xk7QaBDdVRxgnW2hso005u9NW8xJRcF7hqR24UB+7RQGbbveU+Xu1yH1T+b86hyw==
 
-vega-lite@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/vega-lite/-/vega-lite-3.0.3.tgz#1c585e825014e169dd3cd6f35368a281fc31f973"
-  integrity sha512-83qElIEtxYoqsYH2BriyWXVMUMOzgXkvdYXh7SoH+vqGcTTBE0XY4+jkuiMcvMq3RBFoeCKYbXyHylj54Puq8A==
+vega-lite@^3.1.0:
+  version "3.1.0"
+  resolved "https://npm.apple.com/vega-lite/-/vega-lite-3.1.0.tgz#52d6c63668eb76de76d71d4d179ea546195b2e41"
+  integrity sha1-UtbGNmjrdt521x1NF56lRhlbLkE=
   dependencies:
     "@types/clone" "~0.1.30"
     "@types/fast-json-stable-stringify" "^2.0.0"

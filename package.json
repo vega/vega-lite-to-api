@@ -15,7 +15,7 @@
   "author": "Kanit (Ham) Wongsuphasawat",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "vega-lite": "^3.0.3",
+    "vega-lite": "^3.1.0",
     "vega-util": "^1.10.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import {Channel} from 'vega-lite/build/src/channel';
+import {Field, FieldDefWithCondition, isFieldDef, MarkPropFieldDef, ValueDef} from 'vega-lite/build/src/channeldef';
 import {FacetedCompositeEncoding} from 'vega-lite/build/src/compositemark';
-import {Field, FieldDefWithCondition, isFieldDef, MarkPropFieldDef, ValueDef} from 'vega-lite/build/src/fielddef';
 import {StandardType} from 'vega-lite/build/src/type';
 import {APIFrom} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
