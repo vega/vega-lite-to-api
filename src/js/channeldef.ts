@@ -1,3 +1,4 @@
+// import {timeUnitOps} from 'vega-lite-api/api/ops';
 import {Aggregate, isArgmaxDef, isArgminDef} from 'vega-lite/build/src/aggregate';
 import {BinParams} from 'vega-lite/build/src/bin';
 import {
@@ -11,11 +12,47 @@ import {
   ScaleFieldDef,
   TypedFieldDef
 } from 'vega-lite/build/src/channeldef';
-import {TimeUnit} from 'vega-lite/build/src/timeunit';
-import {QUANTITATIVE, StandardType, Type} from 'vega-lite/build/src/type';
+import {
+  isLocalSingleTimeUnit,
+  isUtcSingleTimeUnit,
+  isUTCTimeUnit,
+  LocalMultiTimeUnit,
+  TimeUnit
+} from 'vega-lite/build/src/timeunit';
+import {QUANTITATIVE, StandardType, TEMPORAL, Type} from 'vega-lite/build/src/type';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
 import {chain, stringify} from './js-util';
+
+export const MULTI_TIMEUNIT_SHORTHAND: {[t in LocalMultiTimeUnit]: string} = {
+  yearquarter: 'YQ',
+  yearquartermonth: 'YQM',
+  yearmonth: 'YM',
+  yearmonthdate: 'YMD',
+  yearmonthdatehours: 'YMDH',
+  yearmonthdatehoursminutes: 'YMDHM',
+  yearmonthdatehoursminutesseconds: 'YMDHMS',
+  quartermonth: 'QM',
+  monthdate: 'MD',
+  monthdatehours: 'MDH',
+  hoursminutes: 'HM',
+  hoursminutesseconds: 'HMS',
+  minutesseconds: 'MS',
+  secondsmilliseconds: 'SMS'
+};
+
+function timeUnitMethod(timeUnit: TimeUnit) {
+  if (isLocalSingleTimeUnit(timeUnit) || isUtcSingleTimeUnit(timeUnit)) {
+    return timeUnit;
+  } else {
+    // Multi
+    const prefix = isUTCTimeUnit(timeUnit) ? 'utc' : 'time';
+    const localTimeUnit: LocalMultiTimeUnit = isUTCTimeUnit(timeUnit)
+      ? (timeUnit.substr(3) as LocalMultiTimeUnit)
+      : timeUnit;
+    return prefix + MULTI_TIMEUNIT_SHORTHAND[localTimeUnit];
+  }
+}
 
 export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>> {
   public transpile(def: FieldDefBase<Field> | TypedFieldDef<Field>): Statement[] {
@@ -24,7 +61,7 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
     if (aggregate) {
       return this.aggregate(aggregate, def);
     } else if (timeUnit) {
-      throw new Error('timeUnit not implemented yet');
+      return this.timeUnit(timeUnit, def);
     } else if (bin) {
       throw new Error('bin not implemented yet');
     } else {
@@ -62,8 +99,15 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
   }
 
   public timeUnit(timeUnit: TimeUnit, def: FieldDef<Field>): string[] {
-    throw new Error('TimeUnit not implemented yet');
+    const {field} = def;
+    const timeUnitChain = `.${timeUnitMethod(timeUnit)}(${stringify(field)})`;
+
+    if (isTypedFieldDef(def) && def.type !== TEMPORAL) {
+      return [timeUnitChain, this.type(def.type, def)];
+    }
+    return [timeUnitChain];
   }
+
   public bin(bin: boolean | BinParams | 'binned' | null, def: FieldDef<Field>): string[] {
     throw new Error('TimeUnit not implemented yet');
   }
