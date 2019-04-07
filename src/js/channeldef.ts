@@ -58,7 +58,7 @@ function timeUnitMethod(timeUnit: TimeUnit) {
 
 const binParamsToJS = new BinParamsToJS();
 
-export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>> {
+export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>, FieldDefBase<Field>> {
   public transpile(def: FieldDefBase<Field> | TypedFieldDef<Field>): Statement[] {
     const {field, aggregate, timeUnit, bin} = def;
 
@@ -130,7 +130,7 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
     return binChain;
   }
 
-  public type = chain<TypedFieldDef<Field>, 'type'>('type');
+  public type = chain<TypedFieldDef<Field>, 'type', FieldDefBase<Field>>('type');
 }
 
 const SCALE_FIELD_DEF_PROP_ORDER: (keyof ScaleFieldDef<Field>)[] = ['title', 'sort', 'scale'];
