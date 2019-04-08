@@ -27,10 +27,25 @@ describe('JS Unit', () => {
       `  .description("A simple bar chart with embedded data.")` + NEWLINE +
       `  .title("DEF")` + NEWLINE +
       `  .data([{"a":"A","b":28}])` + NEWLINE +
-      `  .encode(` + NEWLINE +
-      `    vl.x().fieldO("a")` + NEWLINE +
-      `    vl.y().fieldQ("b")` + NEWLINE +
-      `  )`
+      `  .encode(vl.x().fieldO("a"), vl.y().fieldQ("b"))`
+    )
+  });
+
+  it('compiles basic bar with timeUnit transform example', () => {
+    const bar: UnitSpec = {
+      // "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
+      data: {
+        values: [{a: 'A', b: 28}]
+      },
+      transform: [{timeUnit: 'year', field: 'date', as: 'year'}],
+      mark: 'point'
+    };
+
+    // prettier-ignore
+    expect(toCode(unitToJS.transpile(bar))).toEqual(
+      `vl.markPoint()` +
+      `.data([{"a":"A","b":28}])` +
+      `.transform(vl.year("date", "year"))`
     )
   });
 
@@ -57,10 +72,7 @@ describe('JS Unit', () => {
       `  .description("A simple bar chart with embedded data.")` + NEWLINE +
       `  .title("DEF")` + NEWLINE +
       `  .data([{"a":"A","b":28}])` + NEWLINE +
-      `  .encode(` + NEWLINE +
-      `    vl.x().fieldO("a")` + NEWLINE +
-      `    vl.y().mean("b")` + NEWLINE +
-      `  )`
+      `  .encode(vl.x().fieldO("a"), vl.y().mean("b"))`
     )
   });
 });

@@ -24,10 +24,16 @@ export class FunctionCall implements IStatement {
   public toCode(indentLevel: number): string {
     const {fn, args} = this;
 
-    // TODO: add some heuristics whether to add line breaks
+    const flatCall = getTab(indentLevel) + fn + '(' + args.map(s => toCode(s)).join(', ') + ')';
+
+    if (flatCall.length < 80) {
+      return flatCall;
+    }
 
     // prettier-ignore
-    return getTab(indentLevel) + fn + ['(', ...args.map(s => toCode(s, indentLevel + 1)), getTab(indentLevel) + ')'].join(NEWLINE);
+    return getTab(indentLevel) + fn + '(' + NEWLINE +
+      args.map(s => toCode(s, indentLevel + 1)).join(',' + NEWLINE) + NEWLINE
+      + getTab(indentLevel) + ')';
   }
 }
 

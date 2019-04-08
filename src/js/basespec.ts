@@ -2,10 +2,13 @@ import {Data, isInlineData, isUrlData} from 'vega-lite/build/src/data';
 import {BaseSpec} from 'vega-lite/build/src/spec';
 import {Transform} from 'vega-lite/build/src/transform';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
-import {Statement} from '../statement';
+import {FunctionCall, Statement} from '../statement';
 import {chain, stringify} from './js-util';
+import {TransformToJS} from './transform';
 
 const BASE_SPEC_CHAIN_ORDER: (keyof BaseSpec)[] = ['name', 'description', 'title', 'data', 'transform'];
+
+const transformToJS = new TransformToJS();
 
 export class BaseSpecToJS implements APIFromWithAllKeys<BaseSpec> {
   public transpile(spec: BaseSpec): Statement | Statement[] {
@@ -34,10 +37,10 @@ export class BaseSpecToJS implements APIFromWithAllKeys<BaseSpec> {
     }
   );
 
-  public transform = chain(
-    'transform',
-    (transform: Transform[]): string => {
-      throw new Error('Transform not implemented yet');
+  public transform(transform: Transform[]) {
+    if (transform) {
+      return new FunctionCall('.transform', transform.map(t => transformToJS.transpile(t)));
     }
-  );
+    return undefined;
+  }
 }

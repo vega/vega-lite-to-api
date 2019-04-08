@@ -36,7 +36,10 @@ export class UnitSpecToJS extends BaseSpecToJS implements APIFromWithAllKeys<Uni
   public height = chain('height');
 
   public encoding(encoding: CompositeEncoding) {
-    return new FunctionCall('.encode', encodingToJS.transpile(encoding));
+    if (encoding) {
+      return new FunctionCall('.encode', encodingToJS.transpile(encoding));
+    }
+    return undefined;
   }
 
   public selection = chain('selection', (selection: {[name: string]: SelectionDef}) => {
