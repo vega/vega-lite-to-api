@@ -54,6 +54,11 @@
     "testPathIgnorePatterns": [
       "node_modules",
       "build"
+    ],
+    "collectCoverage": true,
+    "coverageReporters": [
+      "json",
+      "html"
     ]
   }
 }
