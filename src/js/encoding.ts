@@ -1,37 +1,72 @@
 import {Channel} from 'vega-lite/build/src/channel';
-import {Field, FieldDefWithCondition, isFieldDef, MarkPropFieldDef, ValueDef} from 'vega-lite/build/src/channeldef';
+import {
+  ChannelDef,
+  Field,
+  FieldDef,
+  FieldDefBase,
+  FieldDefWithCondition,
+  isFieldDef,
+  isValueDef,
+  MarkPropFieldDef,
+  OrderFieldDef,
+  PositionFieldDef,
+  TextFieldDef,
+  Value,
+  ValueDef,
+  ValueDefWithCondition
+} from 'vega-lite/build/src/channeldef';
 import {FacetedCompositeEncoding} from 'vega-lite/build/src/compositemark';
-import {StandardType} from 'vega-lite/build/src/type';
-import {APIFrom} from '../apifrom';
+import {TitleMixins} from 'vega-lite/build/src/guide';
+import {FacetFieldDef} from 'vega-lite/build/src/spec/facet';
+import {Type} from 'vega-lite/build/src/type';
+import {keys} from 'vega-lite/build/src/util';
+import {isArray} from 'vega-util';
+import {APIFromAllKeys} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
-import {MarkPropFieldDefToJS, PositionFieldDefToJS} from './channeldef';
+import {
+  FacetFieldDefToJS,
+  FieldDefBaseWithTitleToJS,
+  MarkPropFieldDefToJS,
+  PositionFieldDefToJS,
+  ScaleFieldDefToJS,
+  TextFieldDefToJS
+} from './channeldef';
 import {stringify} from './js-util';
 
-// TODO: declare this in Vega-Lite so everyone can use
-type PositionDef = FacetedCompositeEncoding['x'] | FacetedCompositeEncoding['y'];
-
-const positionFieldDef = new PositionFieldDefToJS();
-
-function position(channelDef: PositionDef, c: Channel): Statement {
-  if (isFieldDef(channelDef)) {
-    return new FunctionChain('vl', [channelChain(c), ...positionFieldDef.transpile(channelDef)]);
-  } else {
-    return value(channelDef, c);
-  }
+function fieldOrValue<FD extends FieldDef<Field>, V extends Value = Value>(transpiler: FieldDefBaseWithTitleToJS) {
+  return (channelDef: FieldDefWithCondition<FD, V> | ValueDefWithCondition<FD, V> | FD[], c: Channel): Statement => {
+    if (isArray(channelDef)) {
+      throw new Error(c + ' array not implemented');
+    } else if (isFieldDef(channelDef)) {
+      // FIXME support condition
+      return new FunctionChain('vl', [channelChain(c), ...transpiler.transpile(channelDef)]);
+    } else if (isValueDef(channelDef)) {
+      // FIXME support condition
+      return value(channelDef, c);
+    } else {
+      throw new Error('Condition only def not implemented');
+    }
+  };
 }
 
-const markPropFieldDef = new MarkPropFieldDefToJS();
+const positionFieldDefToJS = new PositionFieldDefToJS();
+const position = fieldOrValue<PositionFieldDef<Field>>(positionFieldDefToJS);
 
-function markProperty(
-  channelDef: FieldDefWithCondition<MarkPropFieldDef<Field, StandardType>, number | string | boolean | null>,
-  c: Channel
-): Statement {
-  if (isFieldDef(channelDef)) {
-    // FIXME support condition
-    return new FunctionChain('vl', [channelChain(c), ...markPropFieldDef.transpile(channelDef)]);
-  } else {
-    return value(channelDef, c);
-  }
+const fieldDefBaseWithTitleToJS = new FieldDefBaseWithTitleToJS();
+const fieldDefBaseWithTitle = fieldOrValue<FieldDefBase<Field> & TitleMixins>(fieldDefBaseWithTitleToJS);
+
+const markPropFieldDefToJS = new MarkPropFieldDefToJS();
+const markProperty = fieldOrValue<MarkPropFieldDef<Field, Type>>(markPropFieldDefToJS);
+
+const textFieldDefToJS = new TextFieldDefToJS();
+const text = fieldOrValue<TextFieldDef<Field>>(textFieldDefToJS);
+
+const scaleFieldDefToJS = new ScaleFieldDefToJS();
+const order = fieldOrValue<OrderFieldDef<Field>>(scaleFieldDefToJS);
+
+const facetFieldDefToJS = new FacetFieldDefToJS();
+function facet(channelDef: FacetFieldDef<Field>, c: Channel) {
+  return new FunctionChain('vl', [channelChain(c), ...facetFieldDefToJS.transpile(channelDef)]);
 }
 
 /**
@@ -45,23 +80,78 @@ function value(valueDef: ValueDef<number | string | boolean>, c: Channel) {
   return new FunctionChain('vl', [channelChain(c, valueDef.value)]);
 }
 
-export class EncodingToJS implements APIFrom<FacetedCompositeEncoding> {
-  public transpile(encoding: FacetedCompositeEncoding): Statement[] {
-    const out = [];
-    // FIXME: add all channels
-    for (const c of ['x', 'y', 'color']) {
-      const def = encoding[c];
-      if (def) {
-        out.push(this[c](def, c));
+export class EncodingToJS implements APIFromAllKeys<FacetedCompositeEncoding, Channel> {
+  public transpile(encoding: FacetedCompositeEncoding) {
+    const out: Statement[] = [];
+
+    keys(encoding).forEach((c: Channel) => {
+      if (encoding[c]) {
+        const o = this[c](
+          encoding[c] as ChannelDef<any>, // need to cast as the method for each channel is different from each other
+          c
+        );
+        out.push(o);
       }
-    }
+    });
     return out;
   }
+
+  // Position & Geo Position
 
   public x = position;
   public y = position;
 
+  public x2 = fieldDefBaseWithTitle;
+  public y2 = fieldDefBaseWithTitle;
+
+  public latitude = fieldDefBaseWithTitle;
+  public longitude = fieldDefBaseWithTitle;
+
+  public latitude2 = fieldDefBaseWithTitle;
+  public longitude2 = fieldDefBaseWithTitle;
+
+  // Facet
+
+  public facet = facet;
+  public row = facet;
+  public column = facet;
+
+  // ErrorExtraEncoding
+
+  public xError = fieldDefBaseWithTitle;
+  public xError2 = fieldDefBaseWithTitle;
+  public yError = fieldDefBaseWithTitle;
+  public yError2 = fieldDefBaseWithTitle;
+
+  // Mark Property
+
   public color = markProperty;
+
+  public fill = markProperty;
+
+  public stroke = markProperty;
+
+  public opacity = markProperty;
+  public fillOpacity = markProperty;
+  public strokeOpacity = markProperty;
+
+  public strokeWidth = markProperty;
+
+  public shape = markProperty;
+
+  public size = markProperty;
+
+  public detail = fieldDefBaseWithTitle;
+
+  public key = fieldDefBaseWithTitle;
+
+  public text = text;
+
+  public tooltip = text;
+
+  public href = text;
+
+  public order = order;
 }
 
 export const encodingToJS = new EncodingToJS();

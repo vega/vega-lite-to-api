@@ -10,8 +10,11 @@ import {
   MarkPropFieldDef,
   PositionFieldDef,
   ScaleFieldDef,
+  TextFieldDef,
   TypedFieldDef
 } from 'vega-lite/build/src/channeldef';
+import {TitleMixins} from 'vega-lite/build/src/guide';
+import {FacetFieldDef} from 'vega-lite/build/src/spec/facet';
 import {
   isLocalSingleTimeUnit,
   isUtcSingleTimeUnit,
@@ -19,7 +22,7 @@ import {
   LocalMultiTimeUnit,
   TimeUnit
 } from 'vega-lite/build/src/timeunit';
-import {QUANTITATIVE, StandardType, TEMPORAL, Type} from 'vega-lite/build/src/type';
+import {QUANTITATIVE, TEMPORAL, Type} from 'vega-lite/build/src/type';
 import {isObject} from 'vega-util';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
@@ -133,24 +136,31 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>,
   public type = chain<TypedFieldDef<Field>, 'type', FieldDefBase<Field>>('type');
 }
 
-const SCALE_FIELD_DEF_PROP_ORDER: (keyof ScaleFieldDef<Field>)[] = ['title', 'sort', 'scale'];
-
-export class ScaleFieldDefToJS extends FieldDefBaseToJS implements APIFromWithAllKeys<ScaleFieldDef<Field>> {
-  public transpile(def: ScaleFieldDef<Field>): Statement[] {
-    return [...super.transpile(def), ...transpileProps(this, def, SCALE_FIELD_DEF_PROP_ORDER)];
+export class FieldDefBaseWithTitleToJS extends FieldDefBaseToJS
+  implements APIFromWithAllKeys<FieldDefBase<Field> & TitleMixins> {
+  public transpile(def: FieldDefBase<Field> & TitleMixins): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, ['title'])];
   }
 
   public title = chain('title');
+}
+
+const SCALE_FIELD_DEF_PROP_ORDER: (keyof ScaleFieldDef<Field>)[] = ['sort', 'scale'];
+
+export class ScaleFieldDefToJS extends FieldDefBaseWithTitleToJS
+  implements APIFromWithAllKeys<ScaleFieldDef<Field, Type>> {
+  public transpile(def: ScaleFieldDef<Field, Type>): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, SCALE_FIELD_DEF_PROP_ORDER)];
+  }
+
   public sort = chain('sort');
 
   public scale = chain('scale');
 }
 
-const POSITION_FIELD_DEF_PROP_ORDER: (keyof PositionFieldDef<Field>)[] = ['axis', 'stack', 'impute'];
-
 export class PositionFieldDefToJS extends ScaleFieldDefToJS implements APIFromWithAllKeys<PositionFieldDef<Field>> {
   public transpile(def: PositionFieldDef<Field>): Statement[] {
-    return [...super.transpile(def), ...transpileProps(this, def, POSITION_FIELD_DEF_PROP_ORDER)];
+    return [...super.transpile(def), ...transpileProps(this, def, ['axis', 'stack', 'impute'])];
   }
 
   public axis = chain('axis');
@@ -160,11 +170,24 @@ export class PositionFieldDefToJS extends ScaleFieldDefToJS implements APIFromWi
   public impute = chain('impute');
 }
 
-const MARK_PROP_FIELD_DEF_PROP_ORDER: (keyof MarkPropFieldDef<Field, StandardType>)[] = ['legend'];
-
 export class MarkPropFieldDefToJS extends ScaleFieldDefToJS implements APIFromWithAllKeys<MarkPropFieldDef<Field>> {
-  public transpile(def: MarkPropFieldDef<Field, StandardType>): Statement[] {
-    return [...super.transpile(def), ...transpileProps(this, def, MARK_PROP_FIELD_DEF_PROP_ORDER)];
+  public transpile(def: MarkPropFieldDef<Field, Type>): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, ['legend'])];
   }
   public legend = chain('legend');
+}
+
+export class FacetFieldDefToJS extends ScaleFieldDefToJS implements APIFromWithAllKeys<FacetFieldDef<Field>> {
+  public transpile(def: FacetFieldDef<Field>): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, ['header'])];
+  }
+  public header = chain('header');
+}
+
+export class TextFieldDefToJS extends FieldDefBaseWithTitleToJS implements APIFromWithAllKeys<TextFieldDef<Field>> {
+  public transpile(def: TextFieldDef<Field>): Statement[] {
+    return [...super.transpile(def), ...transpileProps(this, def, ['format', 'formatType'])];
+  }
+  public format = chain('format');
+  public formatType = chain('formatType');
 }
