@@ -27,7 +27,27 @@ describe('JS ChannelDef', () => {
       expect(fieldDefBase.transpile(fieldDef)).toEqual(['.argmin("a")', '.fieldQ("b")']);
     });
 
-    it('compiles singleTimeUnit correctly', () => {
+    it('compiles bin: true correctly', () => {
+      const fieldDef: TypedFieldDef<string> = {bin: true, field: 'b', type: 'quantitative'};
+      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")']);
+    });
+
+    it('compiles bin: ordinal correctly', () => {
+      const fieldDef: TypedFieldDef<string> = {bin: true, field: 'b', type: 'ordinal'};
+      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")', '.type("ordinal")']);
+    });
+
+    it('compiles bin object correctly', () => {
+      const fieldDef: TypedFieldDef<string> = {bin: {maxbins: 20, extent: [0, 1]}, field: 'b', type: 'quantitative'};
+      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")', '.extent([0,1])', '.maxbins(20)']);
+    });
+
+    it('compiles bin: "binned" correctly', () => {
+      const fieldDef: TypedFieldDef<string> = {bin: 'binned', field: 'b', type: 'quantitative'};
+      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")', '.binned(true)']);
+    });
+
+    it('compiles singleTimeUnit and its UTC counterpart correctly', () => {
       for (const timeUnit of TIMEUNIT_PARTS) {
         const fieldDef: TypedFieldDef<string> = {timeUnit, field: 'b', type: 'temporal'};
         expect(fieldDefBase.transpile(fieldDef)).toEqual([`.${timeUnit}("b")`]);
@@ -39,6 +59,13 @@ describe('JS ChannelDef', () => {
         };
 
         expect(fieldDefBase.transpile(utcFieldDef)).toEqual([`.utc${timeUnit}("b")`]);
+      }
+    });
+
+    it('compiles singleTimeUnit: ordinal correctly', () => {
+      for (const timeUnit of TIMEUNIT_PARTS) {
+        const fieldDef: TypedFieldDef<string> = {timeUnit, field: 'b', type: 'ordinal'};
+        expect(fieldDefBase.transpile(fieldDef)).toEqual([`.${timeUnit}("b")`, '.type("ordinal")']);
       }
     });
 

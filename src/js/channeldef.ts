@@ -20,8 +20,10 @@ import {
   TimeUnit
 } from 'vega-lite/build/src/timeunit';
 import {QUANTITATIVE, StandardType, TEMPORAL, Type} from 'vega-lite/build/src/type';
+import {isObject} from 'vega-util';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
+import {BinParamsToJS} from './bin';
 import {chain, stringify} from './js-util';
 
 export const MULTI_TIMEUNIT_SHORTHAND: {[t in LocalMultiTimeUnit]: string} = {
@@ -54,6 +56,8 @@ function timeUnitMethod(timeUnit: TimeUnit) {
   }
 }
 
+const binParamsToJS = new BinParamsToJS();
+
 export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>> {
   public transpile(def: FieldDefBase<Field> | TypedFieldDef<Field>): Statement[] {
     const {field, aggregate, timeUnit, bin} = def;
@@ -63,7 +67,7 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
     } else if (timeUnit) {
       return this.timeUnit(timeUnit, def);
     } else if (bin) {
-      throw new Error('bin not implemented yet');
+      return this.bin(bin, def);
     } else {
       return [this.field(field, def)];
     }
@@ -89,27 +93,41 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>>
     } else if (isArgminDef(aggregate)) {
       return [...this.transpile({aggregate: 'argmin', field: aggregate.argmin}), ...this.transpile({field, type})];
     } else {
-      const aggregateChain = `.${aggregate}(${field ? stringify(field) : ''})`;
+      const aggregateChain = [`.${aggregate}(${field ? stringify(field) : ''})`];
 
       if (isTypedFieldDef(def) && type !== QUANTITATIVE) {
-        return [aggregateChain, this.type(type, def)];
+        aggregateChain.push(this.type(type, def));
       }
-      return [aggregateChain];
+      return aggregateChain;
     }
   }
 
   public timeUnit(timeUnit: TimeUnit, def: FieldDef<Field>): string[] {
     const {field} = def;
-    const timeUnitChain = `.${timeUnitMethod(timeUnit)}(${stringify(field)})`;
+    const timeUnitChain = [`.${timeUnitMethod(timeUnit)}(${stringify(field)})`];
 
     if (isTypedFieldDef(def) && def.type !== TEMPORAL) {
-      return [timeUnitChain, this.type(def.type, def)];
+      timeUnitChain.push(this.type(def.type, def));
     }
-    return [timeUnitChain];
+    return timeUnitChain;
   }
 
-  public bin(bin: boolean | BinParams | 'binned' | null, def: FieldDef<Field>): string[] {
-    throw new Error('TimeUnit not implemented yet');
+  public bin(bin: boolean | BinParams | 'binned' | null, def: FieldDef<Field>): Statement[] {
+    const {field} = def;
+
+    const binChain: Statement[] = [`.bin(${stringify(field)})`];
+
+    if (bin === 'binned') {
+      binChain.push('.binned(true)');
+    } else if (isObject(bin)) {
+      binChain.push(...binParamsToJS.transpile(bin));
+    }
+
+    if (isTypedFieldDef(def) && def.type !== QUANTITATIVE) {
+      binChain.push(this.type(def.type, def));
+    }
+
+    return binChain;
   }
 
   public type = chain<TypedFieldDef<Field>, 'type'>('type');
