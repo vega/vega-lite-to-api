@@ -1,7 +1,8 @@
 import {TypedFieldDef} from 'vega-lite/build/src/channeldef';
 import {TIMEUNIT_PARTS, UtcMultiTimeUnit, UtcSingleTimeUnit} from 'vega-lite/build/src/timeunit';
 import {keys} from 'vega-lite/build/src/util';
-import {FieldDefBaseToJS, MULTI_TIMEUNIT_SHORTHAND} from './channeldef';
+import {FieldDefBaseToJS} from './channeldef';
+import {MULTI_TIMEUNIT_SHORTHAND} from './timeUnit';
 
 describe('JS ChannelDef', () => {
   describe('FieldDefBase', () => {

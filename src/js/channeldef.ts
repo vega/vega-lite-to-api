@@ -1,4 +1,3 @@
-// import {timeUnitOps} from 'vega-lite-api/api/ops';
 import {Aggregate, isArgmaxDef, isArgminDef} from 'vega-lite/build/src/aggregate';
 import {BinParams} from 'vega-lite/build/src/bin';
 import {
@@ -15,49 +14,14 @@ import {
 } from 'vega-lite/build/src/channeldef';
 import {TitleMixins} from 'vega-lite/build/src/guide';
 import {FacetFieldDef} from 'vega-lite/build/src/spec/facet';
-import {
-  isLocalSingleTimeUnit,
-  isUtcSingleTimeUnit,
-  isUTCTimeUnit,
-  LocalMultiTimeUnit,
-  TimeUnit
-} from 'vega-lite/build/src/timeunit';
+import {TimeUnit} from 'vega-lite/build/src/timeunit';
 import {QUANTITATIVE, TEMPORAL, Type} from 'vega-lite/build/src/type';
 import {isObject} from 'vega-util';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
 import {BinParamsToJS} from './bin';
 import {chain, stringify} from './js-util';
-
-export const MULTI_TIMEUNIT_SHORTHAND: {[t in LocalMultiTimeUnit]: string} = {
-  yearquarter: 'YQ',
-  yearquartermonth: 'YQM',
-  yearmonth: 'YM',
-  yearmonthdate: 'YMD',
-  yearmonthdatehours: 'YMDH',
-  yearmonthdatehoursminutes: 'YMDHM',
-  yearmonthdatehoursminutesseconds: 'YMDHMS',
-  quartermonth: 'QM',
-  monthdate: 'MD',
-  monthdatehours: 'MDH',
-  hoursminutes: 'HM',
-  hoursminutesseconds: 'HMS',
-  minutesseconds: 'MS',
-  secondsmilliseconds: 'SMS'
-};
-
-function timeUnitMethod(timeUnit: TimeUnit) {
-  if (isLocalSingleTimeUnit(timeUnit) || isUtcSingleTimeUnit(timeUnit)) {
-    return timeUnit;
-  } else {
-    // Multi
-    const prefix = isUTCTimeUnit(timeUnit) ? 'utc' : 'time';
-    const localTimeUnit: LocalMultiTimeUnit = isUTCTimeUnit(timeUnit)
-      ? (timeUnit.substr(3) as LocalMultiTimeUnit)
-      : timeUnit;
-    return prefix + MULTI_TIMEUNIT_SHORTHAND[localTimeUnit];
-  }
-}
+import {timeUnitMethod} from './timeUnit';
 
 const binParamsToJS = new BinParamsToJS();
 
