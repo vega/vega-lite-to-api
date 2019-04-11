@@ -45,7 +45,7 @@ describe('JS Unit', () => {
     expect(toCode(unitToJS.transpile(bar))).toEqual(
       `vl.markPoint()` +
       `.data([{"a":"A","b":28}])` +
-      `.transform(vl.year("date", "year"))`
+      `.transform(vl.year("date").as("year"))`
     )
   });
 
