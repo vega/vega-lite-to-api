@@ -28,24 +28,9 @@ describe('JS ChannelDef', () => {
       expect(fieldDefBase.transpile(fieldDef)).toEqual(['.argmin("a")', '.fieldQ("b")']);
     });
 
-    it('compiles bin: true correctly', () => {
-      const fieldDef: TypedFieldDef<string> = {bin: true, field: 'b', type: 'quantitative'};
-      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")']);
-    });
-
-    it('compiles bin: ordinal correctly', () => {
-      const fieldDef: TypedFieldDef<string> = {bin: true, field: 'b', type: 'ordinal'};
-      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")', '.type("ordinal")']);
-    });
-
-    it('compiles bin object correctly', () => {
-      const fieldDef: TypedFieldDef<string> = {bin: {maxbins: 20, extent: [0, 1]}, field: 'b', type: 'quantitative'};
-      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")', '.extent([0,1])', '.maxbins(20)']);
-    });
-
-    it('compiles bin: "binned" correctly', () => {
-      const fieldDef: TypedFieldDef<string> = {bin: 'binned', field: 'b', type: 'quantitative'};
-      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.bin("b")', '.binned(true)']);
+    it('compiles bin correctly', () => {
+      const fieldDef: TypedFieldDef<string> = {bin: {extent: [0, 1], maxbins: 20}, field: 'b', type: 'quantitative'};
+      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.fieldQ("b")', '.bin({"extent":[0,1],"maxbins":20})']);
     });
 
     it('compiles singleTimeUnit and its UTC counterpart correctly', () => {

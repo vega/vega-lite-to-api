@@ -1,5 +1,4 @@
 import {Aggregate, isArgmaxDef, isArgminDef} from 'vega-lite/build/src/aggregate';
-import {BinParams} from 'vega-lite/build/src/bin';
 import {
   Field,
   FieldDef,
@@ -16,27 +15,21 @@ import {TitleMixins} from 'vega-lite/build/src/guide';
 import {FacetFieldDef} from 'vega-lite/build/src/spec/facet';
 import {TimeUnit} from 'vega-lite/build/src/timeunit';
 import {QUANTITATIVE, TEMPORAL, Type} from 'vega-lite/build/src/type';
-import {isObject} from 'vega-util';
 import {APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {Statement} from '../statement';
-import {BinParamsToJS} from './bin';
 import {chain, stringify} from './js-util';
 import {timeUnitMethod} from './timeUnit';
 
-const binParamsToJS = new BinParamsToJS();
-
 export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>, FieldDefBase<Field>> {
   public transpile(def: FieldDefBase<Field> | TypedFieldDef<Field>): Statement[] {
-    const {field, aggregate, timeUnit, bin} = def;
+    const {field, aggregate, timeUnit} = def;
 
     if (aggregate) {
       return this.aggregate(aggregate, def);
     } else if (timeUnit) {
       return this.timeUnit(timeUnit, def);
-    } else if (bin) {
-      return this.bin(bin, def);
     } else {
-      return [this.field(field, def)];
+      return this.field(field, def);
     }
   }
 
@@ -45,7 +38,14 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>,
     if (isTypedFieldDef(def)) {
       t = def.type.charAt(0).toUpperCase();
     }
-    return `.field${t}(${stringify(field)})`;
+    const out = [`.field${t}(${stringify(field)})`];
+
+    const {bin} = def;
+
+    if (bin) {
+      out.push(this.bin(bin, def));
+    }
+    return out;
   }
 
   public aggregate(aggregate: Aggregate | HiddenCompositeAggregate, def: FieldDef<Field>): Statement[] {
@@ -79,23 +79,7 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>,
     return timeUnitChain;
   }
 
-  public bin(bin: boolean | BinParams | 'binned' | null, def: FieldDef<Field>): Statement[] {
-    const {field} = def;
-
-    const binChain: Statement[] = [`.bin(${stringify(field)})`];
-
-    if (bin === 'binned') {
-      binChain.push('.binned(true)');
-    } else if (isObject(bin)) {
-      binChain.push(...binParamsToJS.transpile(bin));
-    }
-
-    if (isTypedFieldDef(def) && def.type !== QUANTITATIVE) {
-      binChain.push(this.type(def.type, def));
-    }
-
-    return binChain;
-  }
+  public bin = chain<TypedFieldDef<Field>, 'bin', FieldDefBase<Field>>('bin');
 
   public type = chain<TypedFieldDef<Field>, 'type', FieldDefBase<Field>>('type');
 }
