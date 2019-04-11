@@ -42,7 +42,7 @@ export type APIFromProp<T extends object, P extends keyof T, O> = (x: T[P], opt?
  */
 export type APIFromWithAllKeys<T extends object, O = undefined> = APIFrom<T> & APIFromAllKeys<T, O>;
 
-export type APIFromAllKeys<T extends object, O> = Required<{[k in keyof T]: APIFromProp<T, k, O>}>;
+type APIFromAllKeys<T extends object, O> = Required<{[k in keyof T]: APIFromProp<T, k, O>}>;
 
 /**
  * Base interface for a transpiler class of a particular Vega-Lite interface T

@@ -21,7 +21,7 @@ import {FacetFieldDef} from 'vega-lite/build/src/spec/facet';
 import {Type} from 'vega-lite/build/src/type';
 import {keys} from 'vega-lite/build/src/util';
 import {isArray} from 'vega-util';
-import {APIFromAllKeys} from '../apifrom';
+import {APIFromWithAllKeys} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
 import {
   FacetFieldDefToJS,
@@ -80,7 +80,7 @@ function value(valueDef: ValueDef<number | string | boolean>, c: Channel) {
   return new FunctionChain('vl', [channelChain(c, valueDef.value)]);
 }
 
-export class EncodingToJS implements APIFromAllKeys<FacetedCompositeEncoding, Channel> {
+export class EncodingToJS implements APIFromWithAllKeys<FacetedCompositeEncoding, Channel> {
   public transpile(encoding: FacetedCompositeEncoding) {
     const out: Statement[] = [];
 
