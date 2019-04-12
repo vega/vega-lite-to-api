@@ -14,9 +14,11 @@ import {
   isFlatten,
   isFold,
   isJoinAggregate,
+  isSample,
   isTimeUnit,
   isWindow,
   JoinAggregateTransform,
+  SampleTransform,
   TimeUnitTransform,
   Transform,
   WindowFieldDef,
@@ -113,6 +115,14 @@ class JoinAggregateTransformToJS implements APIFromWithAllKeys<JoinAggregateTran
   });
 }
 
+class SampleTransformToJS implements APIFromWithAllKeys<SampleTransform> {
+  public transpile(t: SampleTransform): FunctionChain {
+    return new FunctionChain(`vl`, transpileProps(this, t, ['sample']));
+  }
+
+  public sample = chain('sample');
+}
+
 class TimeUnitTransformToJS implements APIFromWithAllKeys<TimeUnitTransform> {
   public transpile(t: TimeUnitTransform): FunctionChain {
     const {field} = t;
@@ -160,12 +170,13 @@ export class TransformToJS implements APIFrom<Transform> {
       filter: new FilterTransformToJS(),
       flatten: new FlattenTransformToJS(),
       fold: new FoldTransformToJS(),
+      sample: new SampleTransformToJS(),
       timeUnit: new TimeUnitTransformToJS(),
       window: new WindowTransformToJS()
     }
   ) {}
   public transpile(t: Transform): Statement {
-    const {aggregate, joinaggregate, calculate, filter, flatten, fold, timeUnit, window} = this.transpilers;
+    const {aggregate, joinaggregate, calculate, filter, flatten, fold, sample, timeUnit, window} = this.transpilers;
 
     if (isAggregate(t)) {
       return aggregate.transpile(t);
@@ -179,6 +190,8 @@ export class TransformToJS implements APIFrom<Transform> {
       return flatten.transpile(t);
     } else if (isJoinAggregate(t)) {
       return joinaggregate.transpile(t);
+    } else if (isSample(t)) {
+      return sample.transpile(t);
     } else if (isTimeUnit(t)) {
       return timeUnit.transpile(t);
     } else if (isWindow(t)) {

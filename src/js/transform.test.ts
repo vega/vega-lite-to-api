@@ -122,6 +122,18 @@ describe('JS Transform', () => {
     });
   });
 
+  describe('Sample', () => {
+    it('outputs correct JS API', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            sample: 1000
+          })
+        )
+      ).toBe('vl.sample(1000)');
+    });
+  });
+
   describe('TimeUnit', () => {
     it('outputs correct JS API', () => {
       expect(
