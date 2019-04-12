@@ -24,16 +24,14 @@ export class BaseSpecToJS implements APIFromWithAllKeys<BaseSpec> {
     (data: Data): string => {
       if (isUrlData(data)) {
         if (data.url && Object.keys(data).length === 1) {
-          return data.url;
+          return stringify(data.url);
         }
-        throw new Error('Url Data with other property not implemented yet');
       } else if (isInlineData(data)) {
         if (data.values && Object.keys(data).length === 1) {
           return stringify(data.values);
         }
-        throw new Error('Inline Values Data with other property not implemented yet');
       }
-      throw new Error('Non URL Data not implemented');
+      return stringify(data);
     }
   );
 

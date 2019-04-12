@@ -4,14 +4,15 @@ import {UnitSpecToJS} from './unit';
 
 describe('JS Unit', () => {
   const unitToJS = new UnitSpecToJS();
-  it('compiles basic bar example', () => {
+  it('compiles basic bar example with data object', () => {
     const bar: UnitSpec = {
       // "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
       name: 'ABC',
       description: 'A simple bar chart with embedded data.',
       title: 'DEF',
       data: {
-        values: [{a: 'A', b: 28}]
+        url: 'data/cars.json',
+        format: {}
       },
       mark: 'bar',
       encoding: {
@@ -26,12 +27,12 @@ describe('JS Unit', () => {
       `  .name("ABC")` + NEWLINE +
       `  .description("A simple bar chart with embedded data.")` + NEWLINE +
       `  .title("DEF")` + NEWLINE +
-      `  .data([{"a":"A","b":28}])` + NEWLINE +
+      `  .data({"url":"data/cars.json","format":{}})` + NEWLINE +
       `  .encode(vl.x().fieldO("a"), vl.y().fieldQ("b"))`
     )
   });
 
-  it('compiles basic bar with timeUnit transform example', () => {
+  it('compiles basic bar with timeUnit transform and inline data', () => {
     const bar: UnitSpec = {
       // "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
       data: {
@@ -49,14 +50,14 @@ describe('JS Unit', () => {
     )
   });
 
-  it('compiles basic aggregeted bar example', () => {
+  it('compiles basic aggregeted bar example with simple URL', () => {
     const bar: UnitSpec = {
       // "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
       name: 'ABC',
       description: 'A simple bar chart with embedded data.',
       title: 'DEF',
       data: {
-        values: [{a: 'A', b: 28}]
+        url: 'cars.json'
       },
       mark: 'bar',
       encoding: {
@@ -71,7 +72,7 @@ describe('JS Unit', () => {
       `  .name("ABC")` + NEWLINE +
       `  .description("A simple bar chart with embedded data.")` + NEWLINE +
       `  .title("DEF")` + NEWLINE +
-      `  .data([{"a":"A","b":28}])` + NEWLINE +
+      `  .data("cars.json")` + NEWLINE +
       `  .encode(vl.x().fieldO("a"), vl.y().mean("b"))`
     )
   });
