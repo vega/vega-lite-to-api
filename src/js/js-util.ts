@@ -1,4 +1,6 @@
+import {array} from 'vega-util';
 import {APIFromProp} from '../apifrom';
+import {FunctionCall} from '../statement';
 
 /**
  * Utility for Javascript only APIs
@@ -13,7 +15,8 @@ export function chain<T extends object, P extends keyof T, O = undefined>(
 ) {
   return (value: T[P], opt: O) => {
     if (value !== undefined) {
-      return `.${prop}(${getArgs(value, opt)})`;
+      const args = array(getArgs(value, opt));
+      return new FunctionCall(`.${prop}`, args);
     }
     return undefined;
   };

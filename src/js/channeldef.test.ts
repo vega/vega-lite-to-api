@@ -1,6 +1,7 @@
 import {TypedFieldDef} from 'vega-lite/build/src/channeldef';
 import {TIMEUNIT_PARTS, UtcMultiTimeUnit, UtcSingleTimeUnit} from 'vega-lite/build/src/timeunit';
 import {keys} from 'vega-lite/build/src/util';
+import {toCode} from '../statement';
 import {FieldDefBaseToJS} from './channeldef';
 import {MULTI_TIMEUNIT_SHORTHAND} from './timeUnit';
 
@@ -15,7 +16,7 @@ describe('JS ChannelDef', () => {
 
     it('compiles median:ordinal correctly', () => {
       const fieldDef: TypedFieldDef<string> = {aggregate: 'median', field: 'f', type: 'ordinal'};
-      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.median("f")', '.type("ordinal")']);
+      expect(fieldDefBase.transpile(fieldDef).map(s => toCode(s))).toEqual(['.median("f")', '.type("ordinal")']);
     });
 
     it('compiles argmax correctly', () => {
@@ -30,7 +31,10 @@ describe('JS ChannelDef', () => {
 
     it('compiles bin correctly', () => {
       const fieldDef: TypedFieldDef<string> = {bin: {extent: [0, 1], maxbins: 20}, field: 'b', type: 'quantitative'};
-      expect(fieldDefBase.transpile(fieldDef)).toEqual(['.fieldQ("b")', '.bin({"extent":[0,1],"maxbins":20})']);
+      expect(fieldDefBase.transpile(fieldDef).map(s => toCode(s))).toEqual([
+        '.fieldQ("b")',
+        '.bin({"extent":[0,1],"maxbins":20})'
+      ]);
     });
 
     it('compiles singleTimeUnit and its UTC counterpart correctly', () => {
@@ -51,7 +55,7 @@ describe('JS ChannelDef', () => {
     it('compiles singleTimeUnit: ordinal correctly', () => {
       for (const timeUnit of TIMEUNIT_PARTS) {
         const fieldDef: TypedFieldDef<string> = {timeUnit, field: 'b', type: 'ordinal'};
-        expect(fieldDefBase.transpile(fieldDef)).toEqual([`.${timeUnit}("b")`, '.type("ordinal")']);
+        expect(fieldDefBase.transpile(fieldDef).map(s => toCode(s))).toEqual([`.${timeUnit}("b")`, '.type("ordinal")']);
       }
     });
 
