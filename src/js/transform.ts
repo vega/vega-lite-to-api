@@ -3,8 +3,10 @@ import {
   AggregatedFieldDef,
   AggregateTransform,
   CalculateTransform,
+  FoldTransform,
   isAggregate,
   isCalculate,
+  isFold,
   isJoinAggregate,
   isTimeUnit,
   isWindow,
@@ -16,7 +18,7 @@ import {
 } from 'vega-lite/build/src/transform';
 import {APIFrom, APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
-import {chain, stringify} from './js-util';
+import {chain, flatten, stringify} from './js-util';
 import {timeUnitMethod} from './timeUnit';
 
 class OpFieldDefToJS implements APIFrom<AggregatedFieldDef | WindowFieldDef> {
@@ -52,6 +54,16 @@ class CalculateTransformToJS implements APIFromWithAllKeys<CalculateTransform> {
   public calculate = chain('calculate');
 
   public as = chain('as');
+}
+
+class FoldTransformToJS implements APIFromWithAllKeys<FoldTransform> {
+  public transpile(t: FoldTransform): FunctionChain {
+    return new FunctionChain(`vl`, transpileProps(this, t, ['fold', 'as']));
+  }
+
+  public fold = chain<FoldTransform, 'fold'>('fold', flatten());
+
+  public as = chain<FoldTransform, 'as'>('as', flatten());
 }
 
 class JoinAggregateTransformToJS implements APIFromWithAllKeys<JoinAggregateTransform> {
@@ -111,6 +123,7 @@ class WindowTransformToJS implements APIFromWithAllKeys<WindowTransform> {
 const aggregateTransformToJS = new AggregateTransformToJS();
 const joinaggregateTransformToJS = new JoinAggregateTransformToJS();
 const calculateTransformToJS = new CalculateTransformToJS();
+const foldTransformToJS = new FoldTransformToJS();
 const timeUnitTransformToJS = new TimeUnitTransformToJS();
 const windowTransformToJS = new WindowTransformToJS();
 
@@ -120,6 +133,8 @@ export class TransformToJS implements APIFrom<Transform> {
       return aggregateTransformToJS.transpile(t);
     } else if (isCalculate(t)) {
       return calculateTransformToJS.transpile(t);
+    } else if (isFold(t)) {
+      return foldTransformToJS.transpile(t);
     } else if (isJoinAggregate(t)) {
       return joinaggregateTransformToJS.transpile(t);
     } else if (isTimeUnit(t)) {

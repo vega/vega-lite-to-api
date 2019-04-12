@@ -1,6 +1,6 @@
-import {array} from 'vega-util';
+import {array, isArray} from 'vega-util';
 import {APIFromProp} from '../apifrom';
-import {FunctionCall} from '../statement';
+import {FunctionCall, Statement} from '../statement';
 
 /**
  * Utility for Javascript only APIs
@@ -19,5 +19,16 @@ export function chain<T extends object, P extends keyof T, O = undefined>(
       return new FunctionCall(`.${prop}`, args);
     }
     return undefined;
+  };
+}
+
+export function flatten<T extends object, P extends keyof T, O = undefined>(
+  getArgs: (v: any, opt?: O) => Statement = v => stringify(v)
+): APIFromProp<T, P, O> {
+  return (value: T[P] & any[], opt?: O) => {
+    if (isArray(value)) {
+      return value.map(v => getArgs(v, opt));
+    }
+    return getArgs(value, opt);
   };
 }

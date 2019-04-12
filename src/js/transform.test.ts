@@ -29,6 +29,19 @@ describe('JS Transform', () => {
     });
   });
 
+  describe('Fold', () => {
+    it('outputs correct JS API', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            fold: ['a', 'b'],
+            as: ['aa', 'bb']
+          })
+        )
+      ).toBe('vl.fold("a", "b").as("aa", "bb")');
+    });
+  });
+
   describe('Joinaggregate', () => {
     it('outputs correct JS API', () => {
       expect(
