@@ -132,30 +132,35 @@ class WindowTransformToJS implements APIFromWithAllKeys<WindowTransform> {
   });
 }
 
-const aggregateTransformToJS = new AggregateTransformToJS();
-const joinaggregateTransformToJS = new JoinAggregateTransformToJS();
-const calculateTransformToJS = new CalculateTransformToJS();
-const flattenTransformToJS = new FlattenTransformToJS();
-const foldTransformToJS = new FoldTransformToJS();
-const timeUnitTransformToJS = new TimeUnitTransformToJS();
-const windowTransformToJS = new WindowTransformToJS();
-
 export class TransformToJS implements APIFrom<Transform> {
+  constructor(
+    private transpilers = {
+      aggregate: new AggregateTransformToJS(),
+      joinaggregate: new JoinAggregateTransformToJS(),
+      calculate: new CalculateTransformToJS(),
+      flatten: new FlattenTransformToJS(),
+      fold: new FoldTransformToJS(),
+      timeUnit: new TimeUnitTransformToJS(),
+      window: new WindowTransformToJS()
+    }
+  ) {}
   public transpile(t: Transform): Statement {
+    const {aggregate, joinaggregate, calculate, flatten, fold, timeUnit, window} = this.transpilers;
+
     if (isAggregate(t)) {
-      return aggregateTransformToJS.transpile(t);
+      return aggregate.transpile(t);
     } else if (isCalculate(t)) {
-      return calculateTransformToJS.transpile(t);
+      return calculate.transpile(t);
     } else if (isFold(t)) {
-      return foldTransformToJS.transpile(t);
+      return fold.transpile(t);
     } else if (isFlatten(t)) {
-      return flattenTransformToJS.transpile(t);
+      return flatten.transpile(t);
     } else if (isJoinAggregate(t)) {
-      return joinaggregateTransformToJS.transpile(t);
+      return joinaggregate.transpile(t);
     } else if (isTimeUnit(t)) {
-      return timeUnitTransformToJS.transpile(t);
+      return timeUnit.transpile(t);
     } else if (isWindow(t)) {
-      return windowTransformToJS.transpile(t);
+      return window.transpile(t);
     }
     throw new Error(`Transform ${stringify(t)} not implemented.`);
   }

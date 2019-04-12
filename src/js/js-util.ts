@@ -22,7 +22,7 @@ export function chain<T extends object, P extends keyof T, O = undefined>(
   };
 }
 
-export function flatten<T extends object, P extends keyof T, O = undefined>(
+export function flattenArray<T extends object, P extends keyof T, O = undefined>(
   getArgs: (v: any, opt?: O) => Statement = v => stringify(v)
 ): APIFromProp<T, P, O> {
   return (value: T[P] & any[], opt?: O) => {
