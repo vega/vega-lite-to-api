@@ -29,6 +29,19 @@ describe('JS Transform', () => {
     });
   });
 
+  describe('Flatten', () => {
+    it('outputs correct JS API', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            flatten: ['a', 'b'],
+            as: ['aa', 'bb']
+          })
+        )
+      ).toBe('vl.flatten("a", "b").as("aa", "bb")');
+    });
+  });
+
   describe('Fold', () => {
     it('outputs correct JS API', () => {
       expect(
@@ -39,6 +52,14 @@ describe('JS Transform', () => {
           })
         )
       ).toBe('vl.fold("a", "b").as("aa", "bb")');
+
+      expect(
+        toCode(
+          transformToJS.transpile({
+            fold: ['a', 'b']
+          })
+        )
+      ).toBe('vl.fold("a", "b")');
     });
   });
 

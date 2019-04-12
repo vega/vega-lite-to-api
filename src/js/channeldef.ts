@@ -38,7 +38,7 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>,
     if (isTypedFieldDef(def)) {
       t = def.type.charAt(0).toUpperCase();
     }
-    const out = [`.field${t}(${stringify(field)})`];
+    const out: Statement[] = [`.field${t}(${stringify(field)})`];
 
     const {bin} = def;
 
@@ -60,7 +60,7 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>,
     } else if (isArgminDef(aggregate)) {
       return [...this.transpile({aggregate: 'argmin', field: aggregate.argmin}), ...this.transpile({field, type})];
     } else {
-      const aggregateChain = [`.${aggregate}(${field ? stringify(field) : ''})`];
+      const aggregateChain: Statement[] = [`.${aggregate}(${field ? stringify(field) : ''})`];
 
       if (isTypedFieldDef(def) && type !== QUANTITATIVE) {
         aggregateChain.push(this.type(type, def));
@@ -69,9 +69,9 @@ export class FieldDefBaseToJS implements APIFromWithAllKeys<FieldDefBase<Field>,
     }
   }
 
-  public timeUnit(timeUnit: TimeUnit, def: FieldDef<Field>): string[] {
+  public timeUnit(timeUnit: TimeUnit, def: FieldDef<Field>) {
     const {field} = def;
-    const timeUnitChain = [`.${timeUnitMethod(timeUnit)}(${stringify(field)})`];
+    const timeUnitChain: Statement[] = [`.${timeUnitMethod(timeUnit)}(${stringify(field)})`];
 
     if (isTypedFieldDef(def) && def.type !== TEMPORAL) {
       timeUnitChain.push(this.type(def.type, def));

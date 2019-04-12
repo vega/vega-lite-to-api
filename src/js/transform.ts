@@ -3,9 +3,11 @@ import {
   AggregatedFieldDef,
   AggregateTransform,
   CalculateTransform,
+  FlattenTransform,
   FoldTransform,
   isAggregate,
   isCalculate,
+  isFlatten,
   isFold,
   isJoinAggregate,
   isTimeUnit,
@@ -66,6 +68,16 @@ class FoldTransformToJS implements APIFromWithAllKeys<FoldTransform> {
   public as = chain<FoldTransform, 'as'>('as', flatten());
 }
 
+class FlattenTransformToJS implements APIFromWithAllKeys<FlattenTransform> {
+  public transpile(t: FlattenTransform): FunctionChain {
+    return new FunctionChain(`vl`, transpileProps(this, t, ['flatten', 'as']));
+  }
+
+  public flatten = chain<FlattenTransform, 'flatten'>('flatten', flatten());
+
+  public as = chain<FlattenTransform, 'as'>('as', flatten());
+}
+
 class JoinAggregateTransformToJS implements APIFromWithAllKeys<JoinAggregateTransform> {
   public transpile(t: JoinAggregateTransform): FunctionChain {
     return new FunctionChain(`vl`, transpileProps(this, t, ['groupby', 'joinaggregate']));
@@ -123,6 +135,7 @@ class WindowTransformToJS implements APIFromWithAllKeys<WindowTransform> {
 const aggregateTransformToJS = new AggregateTransformToJS();
 const joinaggregateTransformToJS = new JoinAggregateTransformToJS();
 const calculateTransformToJS = new CalculateTransformToJS();
+const flattenTransformToJS = new FlattenTransformToJS();
 const foldTransformToJS = new FoldTransformToJS();
 const timeUnitTransformToJS = new TimeUnitTransformToJS();
 const windowTransformToJS = new WindowTransformToJS();
@@ -135,6 +148,8 @@ export class TransformToJS implements APIFrom<Transform> {
       return calculateTransformToJS.transpile(t);
     } else if (isFold(t)) {
       return foldTransformToJS.transpile(t);
+    } else if (isFlatten(t)) {
+      return flattenTransformToJS.transpile(t);
     } else if (isJoinAggregate(t)) {
       return joinaggregateTransformToJS.transpile(t);
     } else if (isTimeUnit(t)) {
