@@ -47,6 +47,6 @@ type APIFromAllKeys<T extends object, O> = Required<{[k in keyof T]: APIFromProp
 /**
  * Base interface for a transpiler class of a particular Vega-Lite interface T
  */
-export interface APIFrom<T extends object> {
+export interface APIFrom<T extends object | string> {
   transpile(x: T): Statement | Statement[];
 }

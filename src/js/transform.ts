@@ -1,12 +1,16 @@
+import {LogicalOperand} from 'vega-lite/build/src/logical';
+import {Predicate} from 'vega-lite/build/src/predicate';
 import {TimeUnit} from 'vega-lite/build/src/timeunit';
 import {
   AggregatedFieldDef,
   AggregateTransform,
   CalculateTransform,
+  FilterTransform,
   FlattenTransform,
   FoldTransform,
   isAggregate,
   isCalculate,
+  isFilter,
   isFlatten,
   isFold,
   isJoinAggregate,
@@ -20,7 +24,8 @@ import {
 } from 'vega-lite/build/src/transform';
 import {APIFrom, APIFromWithAllKeys, transpileProps} from '../apifrom';
 import {FunctionChain, Statement} from '../statement';
-import {chain, flatten, stringify} from './js-util';
+import {chain, flattenArray, stringify} from './js-util';
+import {LogicalOperandToJS, PredicateToJS} from './predicate';
 import {timeUnitMethod} from './timeUnit';
 
 class OpFieldDefToJS implements APIFrom<AggregatedFieldDef | WindowFieldDef> {
@@ -58,14 +63,28 @@ class CalculateTransformToJS implements APIFromWithAllKeys<CalculateTransform> {
   public as = chain('as');
 }
 
+class FilterTransformToJS implements APIFromWithAllKeys<FilterTransform> {
+  constructor(
+    predicate = new PredicateToJS(),
+    private logicalOperand = new LogicalOperandToJS<Predicate>(x => predicate.transpile(x))
+  ) {}
+  public transpile(t: FilterTransform): FunctionChain {
+    return new FunctionChain(`vl`, transpileProps(this, t, ['filter']));
+  }
+
+  public filter = chain<FilterTransform, 'filter'>('filter', (filter: LogicalOperand<Predicate>) =>
+    this.logicalOperand.transpile(filter)
+  );
+}
+
 class FoldTransformToJS implements APIFromWithAllKeys<FoldTransform> {
   public transpile(t: FoldTransform): FunctionChain {
     return new FunctionChain(`vl`, transpileProps(this, t, ['fold', 'as']));
   }
 
-  public fold = chain<FoldTransform, 'fold'>('fold', flatten());
+  public fold = chain<FoldTransform, 'fold'>('fold', flattenArray());
 
-  public as = chain<FoldTransform, 'as'>('as', flatten());
+  public as = chain<FoldTransform, 'as'>('as', flattenArray());
 }
 
 class FlattenTransformToJS implements APIFromWithAllKeys<FlattenTransform> {
@@ -73,9 +92,9 @@ class FlattenTransformToJS implements APIFromWithAllKeys<FlattenTransform> {
     return new FunctionChain(`vl`, transpileProps(this, t, ['flatten', 'as']));
   }
 
-  public flatten = chain<FlattenTransform, 'flatten'>('flatten', flatten());
+  public flatten = chain<FlattenTransform, 'flatten'>('flatten', flattenArray());
 
-  public as = chain<FlattenTransform, 'as'>('as', flatten());
+  public as = chain<FlattenTransform, 'as'>('as', flattenArray());
 }
 
 class JoinAggregateTransformToJS implements APIFromWithAllKeys<JoinAggregateTransform> {
@@ -138,6 +157,7 @@ export class TransformToJS implements APIFrom<Transform> {
       aggregate: new AggregateTransformToJS(),
       joinaggregate: new JoinAggregateTransformToJS(),
       calculate: new CalculateTransformToJS(),
+      filter: new FilterTransformToJS(),
       flatten: new FlattenTransformToJS(),
       fold: new FoldTransformToJS(),
       timeUnit: new TimeUnitTransformToJS(),
@@ -145,12 +165,14 @@ export class TransformToJS implements APIFrom<Transform> {
     }
   ) {}
   public transpile(t: Transform): Statement {
-    const {aggregate, joinaggregate, calculate, flatten, fold, timeUnit, window} = this.transpilers;
+    const {aggregate, joinaggregate, calculate, filter, flatten, fold, timeUnit, window} = this.transpilers;
 
     if (isAggregate(t)) {
       return aggregate.transpile(t);
     } else if (isCalculate(t)) {
       return calculate.transpile(t);
+    } else if (isFilter(t)) {
+      return filter.transpile(t);
     } else if (isFold(t)) {
       return fold.transpile(t);
     } else if (isFlatten(t)) {

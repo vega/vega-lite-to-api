@@ -29,6 +29,52 @@ describe('JS Transform', () => {
     });
   });
 
+  describe('Filter', () => {
+    it('outputs correct JS API for filter expression', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            filter: 'datum.x'
+          })
+        )
+      ).toBe('vl.filter("datum.x")');
+    });
+
+    it('outputs correct JS API for field predicate filter', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            filter: {field: 'a', equal: 5}
+          })
+        )
+      ).toBe('vl.filter({"field":"a","equal":5})');
+    });
+
+    it('outputs correct JS API for logical operand', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            filter: {
+              or: [{and: ['datum.a', 'datum.b']}, {not: 'datum.c'}]
+            }
+          })
+        )
+      ).toBe('vl.filter(vl.or(vl.and("datum.a", "datum.b"), vl.not("datum.c")))');
+    });
+
+    it('outputs correct JS API for selection', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            filter: {
+              selection: 'brush'
+            }
+          })
+        )
+      ).toBe('vl.filter(brush)');
+    });
+  });
+
   describe('Flatten', () => {
     it('outputs correct JS API', () => {
       expect(
