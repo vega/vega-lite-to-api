@@ -1,4 +1,4 @@
-import {toCode} from '../statement';
+import {NEWLINE, toCode} from '../statement';
 import {TransformToJS} from './transform';
 describe('JS Transform', () => {
   const transformToJS = new TransformToJS();
@@ -29,6 +29,19 @@ describe('JS Transform', () => {
     });
   });
 
+  describe('Joinaggregate', () => {
+    it('outputs correct JS API', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            joinaggregate: [{op: 'mean', field: 'a', as: 'b'}, {op: 'mean', field: 'e', as: 'f'}],
+            groupby: ['c', 'd']
+          })
+        )
+      ).toBe('vl.groupby("c","d").joinaggregate(vl.mean("a").as("b"), vl.mean("e").as("f"))');
+    });
+  });
+
   describe('TimeUnit', () => {
     it('outputs correct JS API', () => {
       expect(
@@ -40,6 +53,25 @@ describe('JS Transform', () => {
           })
         )
       ).toBe('vl.month("a").as("b")');
+    });
+  });
+
+  describe('Window', () => {
+    it('outputs correct JS API', () => {
+      expect(
+        toCode(
+          transformToJS.transpile({
+            window: [{op: 'mean', field: 'a', as: 'b'}, {op: 'mean', field: 'e', as: 'f'}],
+            groupby: ['c', 'd'],
+            frame: [0, 3]
+          })
+        )
+      ).toBe(
+        // prettier-ignore
+        'vl.groupby("c","d")' + NEWLINE +
+          '  .window(vl.mean("a").as("b"), vl.mean("e").as("f"))' + NEWLINE +
+          '  .frame([0,3])'
+      );
     });
   });
 });
